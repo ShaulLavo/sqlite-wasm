@@ -6,7 +6,7 @@ import {
   TransactionMode,
   InStatement,
   LibsqlError,
-} from './api';
+} from './api.js';
 
 export const supportedUrlLink =
   'https://github.com/libsql/libsql-client-ts#supported-urls';
