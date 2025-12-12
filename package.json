@@ -20,7 +20,8 @@
     "index.d.ts",
     "index.mjs",
     "node.mjs",
-    "sqlite-wasm/"
+    "sqlite-wasm/",
+    "dist"
   ],
   "types": "index.d.ts",
   "exports": {
