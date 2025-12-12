@@ -51,6 +51,7 @@
     "start": "cd demo && npm run dev",
     "demo": "cd demo && npm run dev",
     "fix": "npx prettier . --write",
+    "prepare": "npm run build:client",
     "prepublishOnly": "npm run build && npm run fix && npm run publint && npm run check-types",
     "deploy": "npm run prepublishOnly && git add . && git commit -am 'New release' && git push && npm publish --access public"
   },
