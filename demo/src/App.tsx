@@ -15,6 +15,9 @@ function App(props: ParentProps) {
 				<A href="/opfs" activeClass="active">
 					OPFS
 				</A>
+				<A href="/client" activeClass="active">
+					Client
+				</A>
 			</nav>
 
 			{props.children}

@@ -8,6 +8,7 @@ import App from './App'
 const MainThreadDemo = lazy(() => import('./demos/MainThreadDemo'))
 const WorkerDemo = lazy(() => import('./demos/WorkerDemo'))
 const OpfsDemo = lazy(() => import('./demos/OpfsDemo'))
+const ClientDemo = lazy(() => import('./demos/ClientDemo'))
 
 const root = document.getElementById('root')
 
@@ -17,6 +18,7 @@ render(
 			<Route path="/" component={MainThreadDemo} />
 			<Route path="/worker" component={WorkerDemo} />
 			<Route path="/opfs" component={OpfsDemo} />
+			<Route path="/client" component={ClientDemo} />
 		</Router>
 	),
 	root!

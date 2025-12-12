@@ -2,6 +2,10 @@ import sqlite3InitModule from '../../../index.mjs';
 import { createClient, Sqlite3Client } from '../../../client';
 import type { Sqlite3ClientType, PoolUtil } from '../../../client/types';
 
+interface Sqlite3 extends Sqlite3ClientType {
+  opfs?: unknown;
+}
+
 type MessageType =
   | { type: 'init' }
   | { type: 'exec'; sql: string; id: number }
@@ -14,7 +18,6 @@ type ResponseType =
   | { type: 'exec-done'; id: number };
 
 let client: Sqlite3Client | null = null;
-
 let sqlite3: Sqlite3ClientType | null = null;
 
 const postLog = (message: string) =>
@@ -22,9 +25,12 @@ const postLog = (message: string) =>
 const postError = (message: string) =>
   self.postMessage({ type: 'error', message } as ResponseType);
 
+const DB_NAME = 'client-demo';
+
 async function initialize() {
   try {
     postLog('Loading SQLite WASM module...');
+    // @ts-ignore
     sqlite3 = await sqlite3InitModule({
       print: () => {},
       printErr: () => {},
@@ -34,34 +40,20 @@ async function initialize() {
 
     postLog(`SQLite version: ${sqlite3.version.libVersion}`);
 
-    // Check for OPFS support
-    // In this demo worker, we try to use OPFS by default, falling back to memory
-    let url = ':memory:';
-    let poolUtil: PoolUtil | undefined = undefined;
-
     // @ts-ignore
-    if (sqlite3.opfs && sqlite3.oo1.OpfsDb) {
-      try {
-        // Determine if we can use OPFS
-        // The client wrapper uses 'file:' protocol and checks for poolUtil or checks sqlite3.oo1.OpfsDb
-        // Here we just use a file path and the client logic will handle it if we pass the right things
-        url = 'file:/worker-db.sqlite3';
-        postLog(`Using OPFS database path: ${url}`);
-      } catch {
-        postLog('OPFS unavailable, using in-memory database');
-      }
-    } else {
-      postLog('Using in-memory database');
-    }
+    const poolUtil = await sqlite3.installOpfsSAHPoolVfs({
+      name: DB_NAME,
+      initialCapacity: 10,
+      directory: '/.opfs-sahpool',
+    });
 
-    const result = createClient({ url, poolUtil }, sqlite3);
+    postLog('OPFS SAH Pool VFS installed');
+    const result = createClient({ url: `file:${DB_NAME}`, poolUtil }, sqlite3);
     client = result[0];
-    // If memory, it created a DB
-    if (url !== ':memory:') {
-      postLog(`Created OPFS database`);
-    } else {
-      postLog(`Created in-memory database`);
-    }
+    postLog(`Client created with URL: file:${DB_NAME}`);
+
+    await client.execute(`PRAGMA foreign_keys = ON;`);
+    postLog('Foreign keys enabled');
 
     self.postMessage({
       type: 'ready',
