@@ -31,6 +31,11 @@
       "main": "./index.mjs",
       "browser": "./index.mjs"
     },
+    "./client": {
+      "types": "./dist/client/index.d.ts",
+      "import": "./dist/client/index.js",
+      "default": "./dist/client/index.js"
+    },
     "./package.json": "./package.json",
     "./sqlite3.wasm": "./sqlite-wasm/jswasm/sqlite3.wasm"
   },
@@ -40,8 +45,9 @@
   "scripts": {
     "publint": "npx publint",
     "check-types": "tsc",
-    "clean": "shx rm -rf sqlite-wasm",
-    "build": "npm run clean && node bin/index.js",
+    "clean": "shx rm -rf sqlite-wasm dist",
+    "build:client": "tsc -p tsconfig.client.json",
+    "build": "npm run clean && node bin/index.js && npm run build:client",
     "start": "cd demo && npm run dev",
     "demo": "cd demo && npm run dev",
     "fix": "npx prettier . --write",
