@@ -42,8 +42,8 @@
     "check-types": "tsc",
     "clean": "shx rm -rf sqlite-wasm",
     "build": "npm run clean && node bin/index.js",
-    "start": "npx http-server --coop",
-    "start:node": "cd demo && node node.mjs",
+    "start": "cd demo && npm run dev",
+    "demo": "cd demo && npm run dev",
     "fix": "npx prettier . --write",
     "prepublishOnly": "npm run build && npm run fix && npm run publint && npm run check-types",
     "deploy": "npm run prepublishOnly && git add . && git commit -am 'New release' && git push && npm publish --access public"

@@ -6,9 +6,16 @@
 /bazel-out
 
 # Node
-/node_modules
+node_modules/
 npm-debug.log
 yarn-error.log
+bun.lock
+bun.lockb
+package-lock.json
+
+# Demo build output
+demo/dist/
+demo/node_modules/
 
 # IDEs and editors
 .idea/
@@ -37,7 +44,3 @@ testem.log
 # System files
 .DS_Store
 Thumbs.db
-
-node_modules/*
-dist/
-bundle

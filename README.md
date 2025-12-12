@@ -1,189 +1,83 @@
-# SQLite Wasm
+# SQLite Wasm (Extended Fork)
 
-SQLite Wasm conveniently wrapped as an ES Module.
+SQLite Wasm with **sqlite-vec** and **soundex** extensions, plus a SolidJS interactive demo.
 
-## Bug reports
+## What's Different in This Fork?
 
-> [!Warning]
->
-> This project wraps the code of
-> [SQLite Wasm](https://sqlite.org/wasm/doc/trunk/index.md) with _no_ changes,
-> apart from added TypeScript types. Please do _not_ file issues or feature
-> requests regarding the underlying SQLite Wasm code here. Instead, please
-> follow the
-> [SQLite bug filing instructions](https://www.sqlite.org/src/wiki?name=Bug+Reports).
-> Filing TypeScript type related issues and feature requests is fine.
-
-## Node.js support
-
-> [!Warning]
->
-> Node.js is currently only supported for in-memory databases without
-> persistence.
+This fork includes:
+- **sqlite-vec** - Vector search extension for embeddings and similarity search
+- **soundex** - Phonetic matching function for fuzzy name searches
+- **FTS5** - Full-text search (enabled by default)
+- **Interactive Demo** - SolidJS-powered fiddle with Main Thread, Worker, and OPFS modes
 
 ## Installation
 
+Install from GitHub:
+
 ```bash
-npm install @sqlite.org/sqlite-wasm
+npm install github:your-user/sqlite-wasm
 ```
+
+## Running the Demo
+
+```bash
+npm install
+npm run demo
+```
+
+This starts a Vite dev server with an interactive SQL fiddle featuring:
+- **Main Thread** - Run queries directly in the browser's main thread
+- **Worker** - Run queries in a Web Worker (non-blocking)
+- **OPFS** - Use Origin Private File System for persistent storage
+
+Each tab includes preset queries demonstrating FTS5, sqlite-vec vectors, JSON functions, and soundex.
 
 ## Usage
 
-There are three ways to use SQLite Wasm:
+### Basic Example
 
-- [in the main thread with a wrapped worker](#in-a-wrapped-worker-with-opfs-if-available)
-  (🏆 preferred option)
-- [in a worker](#in-a-worker-with-opfs-if-available)
-- [in the main thread](#in-the-main-thread-without-opfs)
+```js
+import sqlite3InitModule from '@sqlite.org/sqlite-wasm';
 
-Only the worker versions allow you to use the origin private file system (OPFS)
-storage back-end.
+const sqlite3 = await sqlite3InitModule();
+const db = new sqlite3.oo1.DB(':memory:');
 
-### In a wrapped worker (with OPFS if available):
+// Use sqlite-vec for vector search
+db.exec(`
+  CREATE VIRTUAL TABLE embeddings USING vec0(vector float[4]);
+  INSERT INTO embeddings(rowid, vector) VALUES (1, '[1.0, 0.0, 0.0, 0.0]');
+`);
 
-> [!Warning]
->
-> For this to work, you need to set the following headers on your server:
->
-> `Cross-Origin-Opener-Policy: same-origin`
->
-> `Cross-Origin-Embedder-Policy: require-corp`
+// Use soundex for fuzzy matching
+db.exec(`SELECT soundex('Robert'), soundex('Rupert');`);
+
+// Use FTS5 for full-text search
+db.exec(`
+  CREATE VIRTUAL TABLE docs USING fts5(title, body);
+  INSERT INTO docs VALUES ('Hello', 'World');
+  SELECT * FROM docs WHERE docs MATCH 'hello';
+`);
+```
+
+### With OPFS Persistence
 
 ```js
 import { sqlite3Worker1Promiser } from '@sqlite.org/sqlite-wasm';
 
-const log = console.log;
-const error = console.error;
+const promiser = await new Promise((resolve) => {
+  const _promiser = sqlite3Worker1Promiser({
+    onready: () => resolve(_promiser),
+  });
+});
 
-const initializeSQLite = async () => {
-  try {
-    log('Loading and initializing SQLite3 module...');
-
-    const promiser = await new Promise((resolve) => {
-      const _promiser = sqlite3Worker1Promiser({
-        onready: () => resolve(_promiser),
-      });
-    });
-
-    log('Done initializing. Running demo...');
-
-    const configResponse = await promiser('config-get', {});
-    log('Running SQLite3 version', configResponse.result.version.libVersion);
-
-    const openResponse = await promiser('open', {
-      filename: 'file:mydb.sqlite3?vfs=opfs',
-    });
-    const { dbId } = openResponse;
-    log(
-      'OPFS is available, created persisted database at',
-      openResponse.result.filename.replace(/^file:(.*?)\?vfs=opfs$/, '$1'),
-    );
-    // Your SQLite code here.
-  } catch (err) {
-    if (!(err instanceof Error)) {
-      err = new Error(err.result.message);
-    }
-    error(err.name, err.message);
-  }
-};
-
-initializeSQLite();
+await promiser('open', { filename: 'file:mydb.sqlite3?vfs=opfs' });
 ```
 
-The `promiser` object above implements the
-[Worker1 API](https://sqlite.org/wasm/doc/trunk/api-worker1.md#worker1-methods).
+> **Note:** OPFS requires these headers on your server:
+> - `Cross-Origin-Opener-Policy: same-origin`
+> - `Cross-Origin-Embedder-Policy: require-corp`
 
-### In a worker (with OPFS if available):
-
-> [!Warning]
->
-> For this to work, you need to set the following headers on your server:
->
-> `Cross-Origin-Opener-Policy: same-origin`
->
-> `Cross-Origin-Embedder-Policy: require-corp`
-
-```js
-// In `main.js`.
-const worker = new Worker('worker.js', { type: 'module' });
-```
-
-```js
-// In `worker.js`.
-import sqlite3InitModule from '@sqlite.org/sqlite-wasm';
-
-const log = console.log;
-const error = console.error;
-
-const start = (sqlite3) => {
-  log('Running SQLite3 version', sqlite3.version.libVersion);
-  const db =
-    'opfs' in sqlite3
-      ? new sqlite3.oo1.OpfsDb('/mydb.sqlite3')
-      : new sqlite3.oo1.DB('/mydb.sqlite3', 'ct');
-  log(
-    'opfs' in sqlite3
-      ? `OPFS is available, created persisted database at ${db.filename}`
-      : `OPFS is not available, created transient database ${db.filename}`,
-  );
-  // Your SQLite code here.
-};
-
-const initializeSQLite = async () => {
-  try {
-    log('Loading and initializing SQLite3 module...');
-    const sqlite3 = await sqlite3InitModule({ print: log, printErr: error });
-    log('Done initializing. Running demo...');
-    start(sqlite3);
-  } catch (err) {
-    error('Initialization error:', err.name, err.message);
-  }
-};
-
-initializeSQLite();
-```
-
-The `db` object above implements the
-[Object Oriented API #1](https://sqlite.org/wasm/doc/trunk/api-oo1.md).
-
-### In the main thread (without OPFS):
-
-```js
-import sqlite3InitModule from '@sqlite.org/sqlite-wasm';
-
-const log = console.log;
-const error = console.error;
-
-const start = (sqlite3) => {
-  log('Running SQLite3 version', sqlite3.version.libVersion);
-  const db = new sqlite3.oo1.DB('/mydb.sqlite3', 'ct');
-  // Your SQLite code here.
-};
-
-const initializeSQLite = async () => {
-  try {
-    log('Loading and initializing SQLite3 module...');
-    const sqlite3 = await sqlite3InitModule({
-      print: log,
-      printErr: error,
-    });
-    log('Done initializing. Running demo...');
-    start(sqlite3);
-  } catch (err) {
-    error('Initialization error:', err.name, err.message);
-  }
-};
-
-initializeSQLite();
-```
-
-The `db` object above implements the
-[Object Oriented API #1](https://sqlite.org/wasm/doc/trunk/api-oo1.md).
-
-## Usage with vite
-
-If you are using [vite](https://vitejs.dev/), you need to add the following
-config option in `vite.config.js`:
+## Vite Configuration
 
 ```js
 import { defineConfig } from 'vite';
@@ -201,43 +95,10 @@ export default defineConfig({
 });
 ```
 
-Check out a
-[sample project](https://stackblitz.com/edit/vitejs-vite-ttrbwh?file=main.js)
-that shows this in action.
-
-## Demo
-
-See the [demo](https://github.com/sqlite/sqlite-wasm/tree/main/demo) folder for
-examples of how to use this in the main thread and in a worker. (Note that the
-worker variant requires special HTTP headers, so it can't be hosted on GitHub
-Pages.) An example that shows how to use this with vite is available on
-[StackBlitz](https://stackblitz.com/edit/vitejs-vite-ttrbwh?file=main.js).
-
-## Projects using this package
-
-See the list of
-[npm dependents](https://www.npmjs.com/browse/depended/@sqlite.org/sqlite-wasm)
-for this package.
-
-## Deploying a new version
-
-(These steps can only be executed by maintainers.)
-
-1. Update the version number in `package.json` reflecting the current
-   [SQLite version number](https://sqlite.org/download.html) and add a build
-   identifier suffix like `-build1`. The complete version number should read
-   something like `3.41.2-build1`.
-1. Run `npm run build` to build the ES Module. This downloads the latest SQLite
-   Wasm binary and builds the ES Module.
-1. Run `npm run deploy` to commit the changes, push to GitHub, and publish the
-   new version to npm.
-
 ## License
 
 Apache 2.0.
 
 ## Acknowledgements
 
-This project is based on [SQLite Wasm](https://sqlite.org/wasm), which it
-conveniently wraps as an ES Module and publishes to npm as
-[`@sqlite.org/sqlite-wasm`](https://www.npmjs.com/package/@sqlite.org/sqlite-wasm).
+Based on [SQLite Wasm](https://sqlite.org/wasm) by the SQLite team.
