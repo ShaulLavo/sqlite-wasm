@@ -46,10 +46,33 @@ async function downloadAndUnzipSqliteWasm(sqliteWasmDownloadLink) {
   fs.rmSync('sqlite-wasm.zip');
 }
 
+import path from 'path';
+
 async function main() {
   try {
-    const sqliteWasmLink = await getSqliteWasmDownloadLink();
-    await downloadAndUnzipSqliteWasm(sqliteWasmLink);
+    // Assuming CWD is the package root (sqlite-wasm)
+    const localWasmPath = path.resolve('../src/ext/wasm/jswasm');
+    if (fs.existsSync(localWasmPath)) {
+      console.log(
+        `Found local SQLite Wasm build at ${localWasmPath}. Copying...`,
+      );
+      const targetDir = 'sqlite-wasm/jswasm';
+      fs.mkdirSync(targetDir, { recursive: true });
+      const files = fs.readdirSync(localWasmPath);
+      for (const file of files) {
+        if (/\.(mjs|wasm|js)$/.test(file)) {
+          fs.copyFileSync(
+            path.join(localWasmPath, file),
+            path.join(targetDir, file),
+          );
+        }
+      }
+      console.log('Copied local build files.');
+    } else {
+      const sqliteWasmLink = await getSqliteWasmDownloadLink();
+      await downloadAndUnzipSqliteWasm(sqliteWasmLink);
+    }
+
     fs.copyFileSync(
       './node_modules/module-workers-polyfill/module-workers-polyfill.min.js',
       './demo/module-workers-polyfill.min.js',

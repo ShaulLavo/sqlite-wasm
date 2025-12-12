@@ -45,7 +45,7 @@
   "scripts": {
     "publint": "npx publint",
     "check-types": "tsc",
-    "clean": "shx rm -rf sqlite-wasm dist",
+    "clean": "shx rm -rf dist",
     "build:client": "tsc -p tsconfig.client.json",
     "build": "npm run clean && node bin/index.js && npm run build:client",
     "start": "cd demo && npm run dev",
