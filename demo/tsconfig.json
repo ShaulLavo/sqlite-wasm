@@ -19,7 +19,9 @@
     "noFallthroughCasesInSwitch": true,
     "baseUrl": ".",
     "paths": {
-      "../../../index.mjs": ["../../../index.d.ts"]
+      "sqlite-wasm": ["../index.d.ts"],
+      "sqlite-wasm/client": ["../dist/client/index.d.ts"],
+      "sqlite-wasm/*": ["../dist/*", "../*"]
     }
   },
   "include": ["src"]
