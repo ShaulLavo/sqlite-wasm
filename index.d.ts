@@ -1,3 +1,4 @@
+/// <reference path="./wasm.d.ts" />
 /** Types of values that can be passed to/retrieved from SQLite. */
 declare type SqlValue =
   | string
@@ -8116,8 +8117,3 @@ declare type CAPI = {
   SQLITE_FAIL: 3;
   SQLITE_REPLACE: 5;
 };
-
-declare module '*/sqlite3.wasm?url' {
-  const url: string;
-  export default url;
-}
