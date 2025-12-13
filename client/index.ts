@@ -25,6 +25,8 @@ import type {
   PoolUtil,
   Sqlite3ClientType,
 } from './types.js';
+
+export type { Config, ExpandedConfig, PoolUtil, Sqlite3ClientType };
 import {
   ResultSetImpl,
   supportedUrlLink,
