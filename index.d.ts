@@ -8116,3 +8116,8 @@ declare type CAPI = {
   SQLITE_FAIL: 3;
   SQLITE_REPLACE: 5;
 };
+
+declare module '*/sqlite3.wasm?url' {
+  const url: string;
+  export default url;
+}
