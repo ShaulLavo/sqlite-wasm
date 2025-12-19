@@ -18,6 +18,21 @@ import {
   TransactionMode,
   Value,
 } from './api.js';
+
+export type {
+  Client,
+  InArgs,
+  InStatement,
+  IntMode,
+  InValue,
+  LibsqlError,
+  Replicated,
+  ResultSet,
+  Row,
+  Transaction,
+  TransactionMode,
+  Value,
+};
 import { expandConfig } from './config.js';
 import type {
   Config,

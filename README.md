@@ -1,14 +1,17 @@
 # SQLite Wasm (Extended Fork)
 
-SQLite Wasm with **sqlite-vec** and **soundex** extensions, plus a SolidJS interactive demo.
+SQLite Wasm with **sqlite-vec** and **soundex** extensions, plus a SolidJS
+interactive demo.
 
 ## What's Different in This Fork?
 
 This fork includes:
+
 - **sqlite-vec** - Vector search extension for embeddings and similarity search
 - **soundex** - Phonetic matching function for fuzzy name searches
 - **FTS5** - Full-text search (enabled by default)
-- **Interactive Demo** - SolidJS-powered fiddle with Main Thread, Worker, and OPFS modes
+- **Interactive Demo** - SolidJS-powered fiddle with Main Thread, Worker, and
+  OPFS modes
 
 ## Installation
 
@@ -26,18 +29,20 @@ npm run demo
 ```
 
 This starts a Vite dev server with an interactive SQL fiddle featuring:
+
 - **Main Thread** - Run queries directly in the browser's main thread
 - **Worker** - Run queries in a Web Worker (non-blocking)
 - **OPFS** - Use Origin Private File System for persistent storage
 
-Each tab includes preset queries demonstrating FTS5, sqlite-vec vectors, JSON functions, and soundex.
+Each tab includes preset queries demonstrating FTS5, sqlite-vec vectors, JSON
+functions, and soundex.
 
 ## Usage
 
 ### Basic Example
 
 ```js
-import sqlite3InitModule from '@sqlite.org/sqlite-wasm';
+import sqlite3InitModule from 'sqlite-wasm';
 
 const sqlite3 = await sqlite3InitModule();
 const db = new sqlite3.oo1.DB(':memory:');
@@ -62,7 +67,7 @@ db.exec(`
 ### With OPFS Persistence
 
 ```js
-import { sqlite3Worker1Promiser } from '@sqlite.org/sqlite-wasm';
+import { sqlite3Worker1Promiser } from 'sqlite-wasm';
 
 const promiser = await new Promise((resolve) => {
   const _promiser = sqlite3Worker1Promiser({
@@ -74,6 +79,7 @@ await promiser('open', { filename: 'file:mydb.sqlite3?vfs=opfs' });
 ```
 
 > **Note:** OPFS requires these headers on your server:
+>
 > - `Cross-Origin-Opener-Policy: same-origin`
 > - `Cross-Origin-Embedder-Policy: require-corp`
 
@@ -90,7 +96,7 @@ export default defineConfig({
     },
   },
   optimizeDeps: {
-    exclude: ['@sqlite.org/sqlite-wasm'],
+    exclude: ['sqlite-wasm'],
   },
 });
 ```

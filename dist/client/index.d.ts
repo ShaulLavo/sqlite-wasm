@@ -1,5 +1,6 @@
 import { Database, Sqlite3Static } from '../index.mjs';
-import { Client, InArgs, InStatement, IntMode, Replicated, ResultSet, Transaction, TransactionMode } from './api.js';
+import { Client, InArgs, InStatement, IntMode, InValue, LibsqlError, Replicated, ResultSet, Row, Transaction, TransactionMode, Value } from './api.js';
+export type { Client, InArgs, InStatement, IntMode, InValue, LibsqlError, Replicated, ResultSet, Row, Transaction, TransactionMode, Value, };
 import type { Config, ExpandedConfig, PoolUtil, Sqlite3ClientType } from './types.js';
 export type { Config, ExpandedConfig, PoolUtil, Sqlite3ClientType };
 export declare function createClient(config: Config, sqlite3: Sqlite3ClientType): [Sqlite3Client, Database];
