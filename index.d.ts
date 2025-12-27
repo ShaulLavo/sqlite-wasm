@@ -2258,6 +2258,8 @@ declare type InitOptions = {
   locateFile?: (path: string, prefix: string) => string;
   print?: (msg: string) => void;
   printErr?: (msg: string) => void;
+  /** Custom option (patched): URL to the OPFS async proxy worker script */
+  opfsProxyUrl?: string;
 };
 
 /**

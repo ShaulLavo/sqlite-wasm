@@ -22,120 +22,9 @@
   freely `delete` that symbol after calling it.
 */
 'use strict';
-/**
-   Configures an sqlite3 Worker API #1 Worker such that it can be
-   manipulated via a Promise-based interface and returns a factory
-   function which returns Promises for communicating with the worker.
-   This proxy has an _almost_ identical interface to the normal
-   worker API, with any exceptions documented below.
 
-   It requires a configuration object with the following properties:
-
-   - `worker` (required): a Worker instance which loads
-   `sqlite3-worker1.js` or a functional equivalent. Note that the
-   promiser factory replaces the worker.onmessage property. This
-   config option may alternately be a function, in which case this
-   function re-assigns this property with the result of calling that
-   function, enabling delayed instantiation of a Worker.
-
-   - `onready` (optional, but...): this callback is called with no
-   arguments when the worker fires its initial
-   'sqlite3-api'/'worker1-ready' message, which it does when
-   sqlite3.initWorker1API() completes its initialization. This is the
-   simplest way to tell the worker to kick off work at the earliest
-   opportunity, and the only way to know when the worker module has
-   completed loading. The irony of using a callback for this, instead
-   of returning a promise from sqlite3Worker1Promiser() is not lost on
-   the developers: see sqlite3Worker1Promiser.v2() which uses a
-   Promise instead.
-
-   - `onunhandled` (optional): a callback which gets passed the
-   message event object for any worker.onmessage() events which
-   are not handled by this proxy. Ideally that "should" never
-   happen, as this proxy aims to handle all known message types.
-
-   - `generateMessageId` (optional): a function which, when passed an
-   about-to-be-posted message object, generates a _unique_ message ID
-   for the message, which this API then assigns as the messageId
-   property of the message. It _must_ generate unique IDs on each call
-   so that dispatching can work. If not defined, a default generator
-   is used (which should be sufficient for most or all cases).
-
-   - `debug` (optional): a console.debug()-style function for logging
-   information about messages.
-
-   This function returns a stateful factory function with the
-   following interfaces:
-
-   - Promise function(messageType, messageArgs)
-   - Promise function({message object})
-
-   The first form expects the "type" and "args" values for a Worker
-   message. The second expects an object in the form {type:...,
-   args:...}  plus any other properties the client cares to set. This
-   function will always set the `messageId` property on the object,
-   even if it's already set, and will set the `dbId` property to the
-   current database ID if it is _not_ set in the message object.
-
-   The function throws on error.
-
-   The function installs a temporary message listener, posts a
-   message to the configured Worker, and handles the message's
-   response via the temporary message listener. The then() callback
-   of the returned Promise is passed the `message.data` property from
-   the resulting message, i.e. the payload from the worker, stripped
-   of the lower-level event state which the onmessage() handler
-   receives.
-
-   Example usage:
-
-   ```
-   const config = {...};
-   const sq3Promiser = sqlite3Worker1Promiser(config);
-   sq3Promiser('open', {filename:"/foo.db"}).then(function(msg){
-     console.log("open response",msg); // => {type:'open', result: {filename:'/foo.db'}, ...}
-   });
-   sq3Promiser({type:'close'}).then((msg)=>{
-     console.log("close response",msg); // => {type:'close', result: {filename:'/foo.db'}, ...}
-   });
-   ```
-
-   Differences from Worker API #1:
-
-   - exec's {callback: STRING} option does not work via this
-   interface (it triggers an exception), but {callback: function}
-   does and works exactly like the STRING form does in the Worker:
-   the callback is called one time for each row of the result set,
-   passed the same worker message format as the worker API emits:
-
-     {type:typeString,
-      row:VALUE,
-      rowNumber:1-based-#,
-      columnNames: array}
-
-   Where `typeString` is an internally-synthesized message type string
-   used temporarily for worker message dispatching. It can be ignored
-   by all client code except that which tests this API. The `row`
-   property contains the row result in the form implied by the
-   `rowMode` option (defaulting to `'array'`). The `rowNumber` is a
-   1-based integer value incremented by 1 on each call into the
-   callback.
-
-   At the end of the result set, the same event is fired with
-   (row=undefined, rowNumber=null) to indicate that
-   the end of the result set has been reached. Note that the rows
-   arrive via worker-posted messages, with all the implications
-   of that.
-
-   Notable shortcomings:
-
-   - "v1" of this this API is not suitable for use as an ESM module
-     because ESM worker modules were not widely supported when it was
-     developed. For use as an ESM module, see the "v2" interface later
-     on in this file.
-*/
 globalThis.sqlite3Worker1Promiser = function callee(config = callee.defaultConfig){
-  // Inspired by: https://stackoverflow.com/a/52439530
+  
   if(1===arguments.length && 'function'===typeof arguments[0]){
     const f = config;
     config = Object.assign(Object.create(null), callee.defaultConfig);
@@ -146,8 +35,7 @@ globalThis.sqlite3Worker1Promiser = function callee(config = callee.defaultConfi
   const handlerMap = Object.create(null);
   const noop = function(){};
   const err = config.onerror
-        || noop /* config.onerror is intentionally undocumented
-                   pending finding a less ambiguous name */;
+        || noop ;
   const debug = config.debug || noop;
   const idTypeMap = config.generateMessageId ? undefined : Object.create(null);
   const genMsgId = config.generateMessageId || function(msg){
@@ -164,11 +52,11 @@ globalThis.sqlite3Worker1Promiser = function callee(config = callee.defaultConfi
     let msgHandler = handlerMap[ev.messageId];
     if(!msgHandler){
       if(ev && 'sqlite3-api'===ev.type && 'worker1-ready'===ev.result) {
-        /*fired one time when the Worker1 API initializes*/
+        
         if(config.onready) config.onready(promiserFunc);
         return;
       }
-      msgHandler = handlerMap[ev.type] /* check for exec per-row callback */;
+      msgHandler = handlerMap[ev.type] ;
       if(msgHandler && msgHandler.onrow){
         msgHandler.onrow(ev);
         return;
@@ -193,8 +81,8 @@ globalThis.sqlite3Worker1Promiser = function callee(config = callee.defaultConfi
     }
     try {msgHandler.resolve(ev)}
     catch(e){msgHandler.reject(e)}
-  }/*worker.onmessage()*/;
-  return promiserFunc = function(/*(msgType, msgArgs) || (msgEnvelope)*/){
+  };
+  return promiserFunc = function(){
     let msg;
     if(1===arguments.length){
       msg = arguments[0];
@@ -211,7 +99,7 @@ globalThis.sqlite3Worker1Promiser = function callee(config = callee.defaultConfi
     msg.departureTime = performance.now();
     const proxy = Object.create(null);
     proxy.message = msg;
-    let rowCallbackId /* message handler ID for exec on-row callback proxy */;
+    let rowCallbackId ;
     if('exec'===msg.type && msg.args){
       if('function'===typeof msg.args.callback){
         rowCallbackId = msg.messageId+':row';
@@ -220,23 +108,10 @@ globalThis.sqlite3Worker1Promiser = function callee(config = callee.defaultConfi
         handlerMap[rowCallbackId] = proxy;
       }else if('string' === typeof msg.args.callback){
         toss("exec callback may not be a string when using the Promise interface.");
-        /**
-           Design note: the reason for this limitation is that this
-           API takes over worker.onmessage() and the client has no way
-           of adding their own message-type handlers to it. Per-row
-           callbacks are implemented as short-lived message.type
-           mappings for worker.onmessage().
-
-           We "could" work around this by providing a new
-           config.fallbackMessageHandler (or some such) which contains
-           a map of event type names to callbacks. Seems like overkill
-           for now, seeing as the client can pass callback functions
-           to this interface (whereas the string-form "callback" is
-           needed for the over-the-Worker interface).
-        */
+        
       }
     }
-    //debug("requestWork", msg);
+    
     let p = new Promise(function(resolve, reject){
       proxy.resolve = resolve;
       proxy.reject = reject;
@@ -247,7 +122,7 @@ globalThis.sqlite3Worker1Promiser = function callee(config = callee.defaultConfi
     if(rowCallbackId) p = p.finally(()=>delete handlerMap[rowCallbackId]);
     return p;
   };
-}/*sqlite3Worker1Promiser()*/;
+};
 
 globalThis.sqlite3Worker1Promiser.defaultConfig = {
   worker: function(){
@@ -255,20 +130,9 @@ globalThis.sqlite3Worker1Promiser.defaultConfig = {
   }
   ,
   onerror: (...args)=>console.error('worker1 promiser error',...args)
-}/*defaultConfig*/;
+};
 
-/**
-   sqlite3Worker1Promiser.v2(), added in 3.46, works identically to
-   sqlite3Worker1Promiser() except that it returns a Promise instead
-   of relying an an onready callback in the config object. The Promise
-   resolves to the same factory function which
-   sqlite3Worker1Promiser() returns.
 
-   If config is-a function or is an object which contains an onready
-   function, that function is replaced by a proxy which will resolve
-   after calling the original function and will reject if that
-   function throws.
-*/
 globalThis.sqlite3Worker1Promiser.v2 = function callee(config = callee.defaultConfig){
   let oldFunc;
   if( 'function' == typeof config ){
@@ -299,19 +163,12 @@ globalThis.sqlite3Worker1Promiser.v2 = function callee(config = callee.defaultCo
   }
   return p;
 }.bind({
-   /* We do this because clients are recommended to delete
-      globalThis.sqlite3Worker1Promiser. */
+   
   original: sqlite3Worker1Promiser
 });
 
 globalThis.sqlite3Worker1Promiser.v2.defaultConfig =
   globalThis.sqlite3Worker1Promiser.defaultConfig;
 
-/**
-  When built as a module, we export sqlite3Worker1Promiser.v2()
-  instead of sqlite3Worker1Promise() because (A) its interface is more
-  conventional for ESM usage and (B) the ESM export option for this
-  API did not exist until v2 was created, so there's no backwards
-  incompatibility.
-*/
+
 export default sqlite3Worker1Promiser.v2;
