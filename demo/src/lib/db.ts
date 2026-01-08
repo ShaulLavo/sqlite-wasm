@@ -1,6 +1,6 @@
 import sqlite3InitModule from '../../../index.mjs';
-import { createClient, Sqlite3Client } from '../../../client';
-import { Database } from '../../../index';
+import { createClient, Sqlite3Client } from '../../../client/index.js';
+import { Database } from '../../../index.mjs';
 
 // Re-export QueryResult for demos
 export interface QueryResult {
@@ -83,9 +83,9 @@ export async function runQuery(sql: string): Promise<QueryResult[]> {
 
     // Convert ResultSet to QueryResult format expected by demos
     if (rs.columns.length > 0 || rs.rows.length > 0) {
-      const values = rs.rows.map((row) => {
+      const values = rs.rows.map((row: any) => {
         // Ensure row values are in column order
-        return rs.columns.map((col) => {
+        return rs.columns.map((col: any) => {
           // @ts-ignore
           return row[col];
         });

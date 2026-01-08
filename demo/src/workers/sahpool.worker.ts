@@ -1,6 +1,6 @@
 import sqlite3InitModule from '../../../index.mjs';
-import { createClient, Sqlite3Client } from '../../../client';
-import type { Sqlite3ClientType, PoolUtil } from '../../../client/types';
+import { createClient, Sqlite3Client } from '../../../client/index.js';
+import type { Sqlite3ClientType, PoolUtil } from '../../../client/types.js';
 
 interface Sqlite3 extends Sqlite3ClientType {
   opfs?: unknown;
@@ -87,8 +87,8 @@ async function execSql(sql: string, id: number) {
 
       // Convert ResultSet to the format compatible with our demo UI
       const columns = result.columns;
-      const values = result.rows.map((row) => {
-        return columns.map((col) => {
+      const values = result.rows.map((row: any) => {
+        return columns.map((col: any) => {
           // @ts-ignore
           return row[col];
         });

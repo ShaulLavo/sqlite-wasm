@@ -2,6 +2,10 @@
   "compilerOptions": {
     "target": "es2020",
     "noEmit": true,
-    "strict": true
-  }
+    "strict": true,
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "skipLibCheck": true
+  },
+  "exclude": ["dist", "node_modules", "demo"]
 }
