@@ -1,18 +1,12 @@
 
-[0m[2m[35m$[0m [2m[1mbun run clean && node bin/index.js && bun run build:client[0m
+[0m[2m[35m$[0m [2m[1mbun run clean && bun x tsx bin/index.ts && bun run build:client[0m
 [0m[2m[35m$[0m [2m[1mshx rm -rf dist[0m
-Found SQLite Wasm download link: https://sqlite.org/2025/sqlite-wasm-3510100.zip
-Downloading and unzipping SQLite Wasm...
-Downloaded and unzipped:
-‣ jswasm/sqlite3.js
-‣ jswasm/sqlite3.mjs
-‣ jswasm/sqlite3-opfs-async-proxy.js
-‣ jswasm/sqlite3.wasm
-‣ jswasm/sqlite3-worker1-bundler-friendly.mjs
-‣ jswasm/sqlite3-worker1.js
-‣ jswasm/sqlite3-worker1.mjs
-‣ jswasm/sqlite3-worker1-promiser-bundler-friendly.mjs
-‣ jswasm/sqlite3-worker1-promiser.js
-‣ jswasm/sqlite3-worker1-promiser.mjs
+SQLite WASM post-install patches
 
+✓ Local SQLite WASM build verified
+✓ Patched locateFile override
+⚠ Could not find opfsProxyUrl assignment to patch
+✓ Type definitions already patched
+
+✓ All patches applied successfully
 [0m[2m[35m$[0m [2m[1mtsc -p tsconfig.client.json[0m

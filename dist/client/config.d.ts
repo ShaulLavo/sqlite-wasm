@@ -1,5 +1,5 @@
-import type { Config, IntMode } from "./api.js";
-import type { Authority } from "./uri.js";
+import type { Config, IntMode } from './api.js';
+import type { Authority } from './uri.js';
 export interface ExpandedConfig {
     scheme: ExpandedScheme;
     tls: boolean;
@@ -15,6 +15,6 @@ export interface ExpandedConfig {
     fetch: Function | undefined;
     concurrency: number;
 }
-export type ExpandedScheme = "wss" | "ws" | "https" | "http" | "file";
+export type ExpandedScheme = 'wss' | 'ws' | 'https' | 'http' | 'file';
 export declare function isInMemoryConfig(config: ExpandedConfig): boolean;
 export declare function expandConfig(config: Readonly<Config>, preferHttp: boolean): ExpandedConfig;
