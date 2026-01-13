@@ -90,9 +90,29 @@ var ENVIRONMENT_IS_SHELL = !ENVIRONMENT_IS_WEB && !ENVIRONMENT_IS_NODE && !ENVIR
     if (!Module['locateFile']) {
     if (!Module['locateFile']) {
     if (!Module['locateFile']) {
+    if (!Module['locateFile']) {
+    if (!Module['locateFile']) {
+    if (!Module['locateFile']) {
+    if (!Module['locateFile']) {
+    if (!Module['locateFile']) {
+    if (!Module['locateFile']) {
+    if (!Module['locateFile']) {
+    if (!Module['locateFile']) {
+    if (!Module['locateFile']) {
+    if (!Module['locateFile']) {
     Module['locateFile'] = function(path, prefix) {
     return new URL(path, import.meta.url).href;
   }.bind(sIMS);
+  }
+  }
+  }
+  }
+  }
+  }
+  }
+  }
+  }
+  }
   }
   }
   }
