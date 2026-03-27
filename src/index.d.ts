@@ -2614,7 +2614,17 @@ export type Sqlite3Static = {
  * intentional. Please do not reintroduce the removed details. See
  * https://github.com/sqlite/sqlite-wasm/pull/129 for details.
  */
-export default function init(): Promise<Sqlite3Static>;
+/** Options for the patched init function. */
+export type InitOptions = {
+  locateFile?: (path: string, prefix: string) => string;
+  print?: (msg: string) => void;
+  printErr?: (msg: string) => void;
+  /** Custom option (patched): URL to the OPFS async proxy worker script */
+  opfsProxyUrl?: string;
+  [key: string]: unknown;
+};
+
+export default function init(options?: InitOptions): Promise<Sqlite3Static>;
 
 export const sqlite3Worker1Promiser: Worker1PromiserFactory;
 

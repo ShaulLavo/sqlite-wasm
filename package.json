@@ -1,5 +1,5 @@
 {
-  "name": "@sqlite.org/sqlite-wasm",
+  "name": "sqlite-wasm",
   "version": "3.51.2-build8",
   "description": "SQLite Wasm conveniently wrapped as an ES Module.",
   "type": "module",
@@ -38,29 +38,47 @@
       "main": "./dist/index.mjs",
       "browser": "./dist/index.mjs"
     },
+    "./client": {
+      "types": "./dist/client/index.d.ts",
+      "browser": "./dist/client/index.js",
+      "import": "./dist/client/index.js",
+      "default": "./dist/client/index.js"
+    },
     "./package.json": "./package.json",
-    "./sqlite3.wasm": "./dist/sqlite3.wasm"
+    "./sqlite3.wasm": "./dist/sqlite3.wasm",
+    "./sqlite3-opfs-async-proxy.js": "./dist/sqlite3-opfs-async-proxy.js"
   },
   "files": [
     "dist",
+    "wasm.d.ts",
     "README.md"
   ],
+  "bin": {
+    "sqlite-wasm": "bin/index.ts"
+  },
   "scripts": {
     "test": "vitest",
     "test:node": "vitest --project node",
     "test:browser": "vitest --project browser",
     "publint": "npx publint",
-    "check-types": "tsgo",
-    "build": "tsdown",
+    "check-types": "tsc --noEmit",
+    "clean": "rm -rf dist",
+    "patch": "npx tsx bin/index.ts",
+    "build:main": "tsdown",
+    "build:client": "tsc -p tsconfig.client.json",
+    "build": "npm run patch && npm run build:main && npm run build:client",
     "start": "npx http-server --coop",
     "start:node": "cd demo && node node.mjs",
     "fix": "npx prettier . --write",
-    "prepare": "lefthook install",
+    "prepare": "npm run build:client",
     "prepublishOnly": "npm run build && npm run fix && npm run publint && npm run check-types",
-    "deploy": "npm run prepublishOnly && git add . && git commit -am 'New release' && git push && npm publish --tag=latest"
+    "deploy": "npm run prepublishOnly && git add . && git commit -am 'New release' && git push && npm publish --access public"
   },
   "engines": {
     "node": ">=22"
+  },
+  "dependencies": {
+    "js-base64": "^3.7.8"
   },
   "devDependencies": {
     "@types/node": "^25.5.0",
@@ -75,6 +93,7 @@
     "prettier-plugin-jsdoc": "^1.8.0",
     "publint": "^0.3.18",
     "tsdown": "^0.21.3",
+    "tsx": "^4.19.0",
     "typescript": "^5.9.3",
     "vitest": "^4.1.0"
   }
