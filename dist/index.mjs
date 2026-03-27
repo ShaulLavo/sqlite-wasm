@@ -13384,7 +13384,7 @@ async function sqlite3InitModule(moduleArg = {}) {
 						promiseWasRejected = false;
 						return promiseResolve_(sqlite3);
 					};
-					const W = new Worker(new URL("sqlite3-opfs-async-proxy.js", import.meta.url));
+					const W = new Worker(new URL(options.proxyUri, import.meta.url));
 					setTimeout(() => {
 						if (void 0 === promiseWasRejected) promiseReject(/* @__PURE__ */ new Error("Timeout while waiting for OPFS async proxy worker."));
 					}, 4e3);

@@ -18092,7 +18092,7 @@ const installOpfsVfs = function callee(options){
       return promiseResolve_(sqlite3);
     };
     const W =
-    new Worker(new URL("sqlite3-opfs-async-proxy.js", import.meta.url));
+    new Worker(new URL(options.proxyUri, import.meta.url));
     setTimeout(()=>{
       /* At attempt to work around a browser-specific quirk in which
          the Worker load is failing in such a way that we neither
